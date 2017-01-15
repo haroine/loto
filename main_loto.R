@@ -1,16 +1,24 @@
 library(foreach)
+library(ggplot2)
 source("functions_payoffs.R")
 
 ## Parameters
 
 max_numbers <- 19
 probs_numbers <- rep(1/max_numbers, max_numbers)
-## Favored numbers
+
+## Favored numbers (scenario 1)
 favored_numbers <- 1:5
-# least_favored_numbers <- 41:49
-least_favored_numbers <- 15:19
+least_favored_numbers <- 14:19
 probs_numbers[favored_numbers] <- probs_numbers[favored_numbers] * 2
 probs_numbers[least_favored_numbers] <- probs_numbers[least_favored_numbers] / 2
+
+## Favored numbers (scenario 2)
+# probs_numbers[1] <- probs_numbers[1] * 2
+# probs_numbers[19] <- probs_numbers[19] * 0.5
+# probs_numbers[2:6] <- probs_numbers[2:6] * 1.4
+# probs_numbers[14:18] <- probs_numbers[14:18] * 0.7
+
 probs_numbers <- probs_numbers / sum(probs_numbers)
 
 k_combination <- 6
@@ -59,3 +67,17 @@ for(i1 in 1:(max_numbers-5)) {
 }
 
 list_combinations$gains <- gains / choose(max_numbers,k_combination)
+
+expected_return <- sum(list_combinations$gains*as.numeric(list_combinations$freq)) / N_players
+
+plot_gains <- ggplot(list_combinations, aes(x=prob_mean_h)) +
+  geom_point(aes(y=gains)) +
+  geom_hline(yintercept = 0, color="red") +
+  geom_hline(yintercept = expected_return, linetype="dashed",
+             color="blue") +
+  xlab("Frequency of combination") +
+  ylab("Expected return") +
+  annotate("text", c(0.03,0.035), c(0.05,expected_return+0.05), 
+           label =c("","Expected return"), color="blue")
+
+print(plot_gains)
